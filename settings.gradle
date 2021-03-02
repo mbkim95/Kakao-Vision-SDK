@@ -1,2 +1,3 @@
+include ':vision'
 include ':app'
 rootProject.name = "Kakao Vision SDK"
