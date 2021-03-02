@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Kakao Vision SDK</string>
+    <string name="translate_result">번역 결과</string>
+    <string name="extracted_sentence">추출된 문장</string>
+    <string name="select_image">이미지 선택</string>
+    <string name="extract_characters">글자 추출</string>
+    <string name="translate">번역</string>
 </resources>
