@@ -1,6 +1,7 @@
 package com.example.vision
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.ResultReceiver
@@ -8,9 +9,18 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vision.IntentFactory.IMAGE_SELECTOR
 import com.example.vision.IntentFactory.KEY_BUNDLE
+import com.example.vision.model.OcrResult
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
 
 class ImageSelectActivity : AppCompatActivity() {
     private lateinit var resultReceiver: ResultReceiver
+    private val visionApi = ApiFactory.vapi.create(VisionApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,11 +44,35 @@ class ImageSelectActivity : AppCompatActivity() {
                 val uri = data.data
                 if (uri.toString().contains("image")) {
                     uri?.let { uri ->
-                        contentResolver.openInputStream(uri).use {
-                            val bitmap = BitmapFactory.decodeStream(it)
+                        contentResolver.openInputStream(uri).use { inputStream ->
+                            val file = File(applicationContext.cacheDir, "image.png")
+                            FileOutputStream(file).use {
+                                BitmapFactory.decodeStream(inputStream).run {
+                                    compress(Bitmap.CompressFormat.PNG, 100, it)
+                                }
+                            }
+                            val image = MultipartBody.Part.createFormData(
+                                "image",
+                                file.name,
+                                file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                            )
                             // 이미지 전송
+                            visionApi.getOcr(image).enqueue(object : Callback<OcrResult> {
+                                override fun onResponse(
+                                    call: retrofit2.Call<OcrResult>,
+                                    response: Response<OcrResult>
+                                ) {
+                                    Log.d("Kakao Vision", "onResponse: ${response.body()}")
+                                    // TODO resultReceiver로 전달
+                                }
 
-                            // 비동기 처리 후에 resultReceiver로 전달
+                                override fun onFailure(
+                                    call: retrofit2.Call<OcrResult>,
+                                    t: Throwable
+                                ) {
+                                    Log.d("Kakao Vision", "onFailure: $call $t")
+                                }
+                            })
                             finish()
                         }
                     }
