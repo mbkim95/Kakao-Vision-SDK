@@ -12,7 +12,6 @@ class VisionApiClient {
 
     fun selectImage(context: Context, callback: () -> Unit) {
         context.startActivity(Intent(context, ImageSelectActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
             putExtra(IntentFactory.KEY_BUNDLE, Bundle().apply {
                 putParcelable(IntentFactory.IMAGE_SELECTOR, resultReceiver(callback))
             })

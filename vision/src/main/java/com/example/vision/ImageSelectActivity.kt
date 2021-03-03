@@ -29,7 +29,7 @@ class ImageSelectActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == IMAGE_SELECT && resultCode == RESULT_OK) {
+        if (requestCode == IMAGE_SELECT && resultCode == RESULT_OK) {
             data?.let {
                 val uri = data.data
                 if (uri.toString().contains("image")) {
@@ -39,6 +39,7 @@ class ImageSelectActivity : AppCompatActivity() {
                             // 이미지 전송
 
                             // 비동기 처리 후에 resultReceiver로 전달
+                            finish()
                         }
                     }
                 }
