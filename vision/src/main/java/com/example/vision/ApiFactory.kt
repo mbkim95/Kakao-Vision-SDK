@@ -17,6 +17,4 @@ object ApiFactory {
             .client(client)
             .build()
     }
-
-    private const val BASE_URL = "https://dapi.kakao.com"
 }

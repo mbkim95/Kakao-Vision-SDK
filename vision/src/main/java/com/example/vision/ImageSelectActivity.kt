@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.example.vision.IntentFactory.IMAGE_SELECTOR
-import com.example.vision.IntentFactory.KEY_BUNDLE
 import com.example.vision.model.OcrResult
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -98,12 +96,5 @@ class ImageSelectActivity : AppCompatActivity() {
         resultReceiver.send(RESULT_CANCELED, Bundle().apply {
             putSerializable(RUNTIME_EXCEPTION, java.lang.RuntimeException())
         })
-    }
-
-    companion object {
-        const val IMAGE_SELECT = 1234
-        const val OCR_RESULT = "ocr result"
-        const val RUNTIME_EXCEPTION = "RuntimeException"
-        const val THROWABLE = "throwable"
     }
 }

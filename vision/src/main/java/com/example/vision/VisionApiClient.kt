@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
-import com.example.vision.ImageSelectActivity.Companion.OCR_RESULT
 import com.example.vision.model.Language
 import com.example.vision.model.OcrResult
 import com.example.vision.model.TranslateResult
@@ -27,8 +26,8 @@ class VisionApiClient {
     private fun selectImage(context: Context, lineBreak: Boolean, callback: (String) -> Unit) {
         context.startActivity(Intent(context, ImageSelectActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra(IntentFactory.KEY_BUNDLE, Bundle().apply {
-                putParcelable(IntentFactory.IMAGE_SELECTOR, resultReceiver(lineBreak, callback))
+            putExtra(KEY_BUNDLE, Bundle().apply {
+                putParcelable(IMAGE_SELECTOR, resultReceiver(lineBreak, callback))
             })
         })
     }
