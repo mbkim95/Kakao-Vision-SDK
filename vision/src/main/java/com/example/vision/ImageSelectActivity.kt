@@ -62,15 +62,22 @@ class ImageSelectActivity : AppCompatActivity() {
                                     call: retrofit2.Call<OcrResult>,
                                     response: Response<OcrResult>
                                 ) {
-                                    Log.d("Kakao Vision", "onResponse: ${response.body()}")
-                                    // TODO resultReceiver로 전달
+                                    if (response.isSuccessful) {
+                                        response.body()?.let {
+                                            sendOk(it)
+                                        }
+                                    } else {
+                                        sendFail()
+                                    }
                                 }
 
                                 override fun onFailure(
                                     call: retrofit2.Call<OcrResult>,
                                     t: Throwable
                                 ) {
-                                    Log.d("Kakao Vision", "onFailure: $call $t")
+                                    resultReceiver.send(RESULT_CANCELED, Bundle().apply {
+                                        putSerializable(THROWABLE, t)
+                                    })
                                 }
                             })
                             finish()
@@ -81,7 +88,22 @@ class ImageSelectActivity : AppCompatActivity() {
         }
     }
 
+    private fun sendOk(data: OcrResult) {
+        resultReceiver.send(RESULT_OK, Bundle().apply {
+            putParcelable(OCR_RESULT, data)
+        })
+    }
+
+    private fun sendFail() {
+        resultReceiver.send(RESULT_CANCELED, Bundle().apply {
+            putSerializable(RUNTIME_EXCEPTION, java.lang.RuntimeException())
+        })
+    }
+
     companion object {
         const val IMAGE_SELECT = 1234
+        const val OCR_RESULT = "ocr result"
+        const val RUNTIME_EXCEPTION = "RuntimeException"
+        const val THROWABLE = "throwable"
     }
 }
