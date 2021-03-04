@@ -10,6 +10,8 @@ import android.os.ResultReceiver
 import com.example.vision.model.Language
 import com.example.vision.model.OcrResult
 import com.example.vision.model.TranslateResult
+import com.example.vision.network.ApiFactory
+import com.example.vision.network.VisionApi
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

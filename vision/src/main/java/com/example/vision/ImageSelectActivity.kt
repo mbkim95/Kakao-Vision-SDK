@@ -8,6 +8,8 @@ import android.os.ResultReceiver
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vision.model.OcrResult
+import com.example.vision.network.ApiFactory
+import com.example.vision.network.VisionApi
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody

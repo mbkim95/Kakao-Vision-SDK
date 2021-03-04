@@ -1,5 +1,6 @@
-package com.example.vision
+package com.example.vision.network
 
+import com.example.vision.BASE_URL
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

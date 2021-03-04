@@ -1,5 +1,6 @@
-package com.example.vision
+package com.example.vision.network
 
+import com.example.vision.*
 import com.example.vision.model.OcrResult
 import com.example.vision.model.TranslateResult
 import okhttp3.MultipartBody

@@ -1,5 +1,7 @@
 package com.example.vision
 
+import com.example.vision.network.ApiFactory
+import com.example.vision.network.VisionApi
 import org.junit.Test
 
 class VisionApiClientTest {
