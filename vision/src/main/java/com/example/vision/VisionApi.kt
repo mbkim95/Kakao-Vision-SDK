@@ -8,13 +8,11 @@ import retrofit2.http.*
 
 interface VisionApi {
 
-    @POST(OCR_PATH)
     @Multipart
-    @Headers("Authorization: KakaoAK 168be425c10d5b79ad741b8fefa97c9e")
+    @POST(OCR_PATH)
     fun getOcr(@Part image: MultipartBody.Part): Call<OcrResult>
 
     @GET(TRANSLATE_PATH)
-    @Headers("Authorization: KakaoAK 168be425c10d5b79ad741b8fefa97c9e")
     fun translateSentence(
         @Query(QUERY) query: String,
         @Query(SOURCE_LANGUAGE) srcLang: String,

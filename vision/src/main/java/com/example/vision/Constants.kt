@@ -12,10 +12,15 @@ const val BASE_URL = "https://dapi.kakao.com"
 const val OCR_PATH = "/v2/vision/text/ocr"
 const val TRANSLATE_PATH = "/v2/translation/translate"
 
-const val AUTH_HEADER = "Authorization: KakaoAK %s"
+const val AUTH_HEADER = "Authorization"
+const val KAKAO_AK = "KakaoAK %s"
 
 const val QUERY = "query"
 const val SOURCE_LANGUAGE = "src_lang"
 const val TARGET_LANGUAGE = "target_lang"
 
 const val TYPE_IMAGE = "image/*"
+
+const val SHARED_PREFERENCE_KEY = "Kakao Vision"
+
+const val REST_API_KEY = "Rest Api Key"

@@ -8,6 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object ApiFactory {
     val vapi: Retrofit by lazy {
         val client = OkHttpClient.Builder()
+            .addInterceptor(RestApiHeaderInterceptor())
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
             .build()
 
