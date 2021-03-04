@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
 import com.example.vision.VisionApiClient
+import com.example.vision.model.Language
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,8 +24,8 @@ class MainActivity : AppCompatActivity() {
             translateBtn.setOnClickListener {
                 VisionApiClient.instance.translateSentence(
                     extractedTv.text.toString(),
-                    "en",
-                    "kr"
+                    Language.ENGLISH,
+                    Language.KOREAN
                 ) {
                     resultTv.text = it
                 }

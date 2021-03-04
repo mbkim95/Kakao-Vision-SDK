@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
 import com.example.vision.ImageSelectActivity.Companion.OCR_RESULT
+import com.example.vision.model.Language
 import com.example.vision.model.OcrResult
 import com.example.vision.model.TranslateResult
 import retrofit2.Call
@@ -32,21 +33,20 @@ class VisionApiClient {
         })
     }
 
-    // TODO: srcLang, targetLang을 Enum으로 제한
     fun translateSentence(
         sentences: String,
-        srcLang: String,
-        targetLang: String,
+        srcLang: Language,
+        targetLang: Language,
         callback: (String) -> Unit
     ) {
-        visionApi.translateSentence(sentences, srcLang, targetLang)
+        visionApi.translateSentence(sentences, srcLang.language, targetLang.language)
             .enqueue(object : Callback<TranslateResult> {
                 override fun onResponse(
                     call: Call<TranslateResult>,
                     response: Response<TranslateResult>
                 ) {
                     if (response.isSuccessful) {
-                        // TODO: StringBuilder 학장함수 구현 및 관련 코드 리팩토링
+                        // TODO: StringBuilder 확장함수 구현 및 관련 코드 리팩토링
                         val translateResult = StringBuilder()
                         response.body()?.translatedText?.get(0)?.forEach {
                             translateResult.append("$it ")
@@ -54,9 +54,9 @@ class VisionApiClient {
                         callback(translateResult.toString())
                     } else {
                         /*
-                      TODO: 에러 상황 처리해야됨
-                      1. 데이터는 전송했지만 번역이 실패한 경우
-                      2. 네트워크 통신이 실패한 경우
+                        TODO: 에러 상황 처리해야됨
+                         1. 데이터는 전송했지만 번역이 실패한 경우
+                         2. 네트워크 통신이 실패한 경우
                       */
                     }
                 }
