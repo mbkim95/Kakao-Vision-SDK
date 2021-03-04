@@ -1,6 +1,7 @@
 package com.example.kakaovisionsdk
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
 import com.example.vision.VisionApiClient
@@ -16,12 +17,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.apply {
             selectBtn.setOnClickListener {
-                VisionApiClient.instance.selectImage(applicationContext) {
-
+                VisionApiClient.instance.getOcrResult(applicationContext, lineBreak = false) {
+                    Log.d("Kakao Vision", "onCreate: $it")
+                    extractedTv.text = it
                 }
             }
         }
     }
-
-
 }

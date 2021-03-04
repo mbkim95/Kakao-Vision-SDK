@@ -68,18 +68,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/select_image"
-                app:layout_constraintEnd_toStartOf="@id/extract_btn"
+                app:layout_constraintEnd_toStartOf="@id/translate_btn"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/result_sv" />
-
-            <Button
-                android:id="@+id/extract_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/extract_characters"
-                app:layout_constraintEnd_toStartOf="@id/translate_btn"
-                app:layout_constraintStart_toEndOf="@id/select_btn"
-                app:layout_constraintTop_toTopOf="@id/select_btn" />
 
             <Button
                 android:id="@+id/translate_btn"
@@ -87,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/translate"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/extract_btn"
+                app:layout_constraintStart_toEndOf="@id/select_btn"
                 app:layout_constraintTop_toTopOf="@id/select_btn" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
