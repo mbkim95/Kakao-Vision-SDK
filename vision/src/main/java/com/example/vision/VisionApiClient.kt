@@ -9,8 +9,16 @@ import android.os.Looper
 import android.os.ResultReceiver
 import com.example.vision.ImageSelectActivity.Companion.OCR_RESULT
 import com.example.vision.model.OcrResult
+import com.example.vision.model.TranslateResult
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class VisionApiClient {
+    private val visionApi by lazy {
+        ApiFactory.vapi.create(VisionApi::class.java)
+    }
+
     fun getOcrResult(context: Context, lineBreak: Boolean, callback: (String) -> Unit) {
         selectImage(context, lineBreak, callback)
     }
@@ -22,6 +30,41 @@ class VisionApiClient {
                 putParcelable(IntentFactory.IMAGE_SELECTOR, resultReceiver(lineBreak, callback))
             })
         })
+    }
+
+    // TODO: srcLang, targetLang을 Enum으로 제한
+    fun translateSentence(
+        sentences: String,
+        srcLang: String,
+        targetLang: String,
+        callback: (String) -> Unit
+    ) {
+        visionApi.translateSentence(sentences, srcLang, targetLang)
+            .enqueue(object : Callback<TranslateResult> {
+                override fun onResponse(
+                    call: Call<TranslateResult>,
+                    response: Response<TranslateResult>
+                ) {
+                    if (response.isSuccessful) {
+                        // TODO: StringBuilder 학장함수 구현 및 관련 코드 리팩토링
+                        val translateResult = StringBuilder()
+                        response.body()?.translatedText?.get(0)?.forEach {
+                            translateResult.append("$it ")
+                        }
+                        callback(translateResult.toString())
+                    } else {
+                        /*
+                      TODO: 에러 상황 처리해야됨
+                      1. 데이터는 전송했지만 번역이 실패한 경우
+                      2. 네트워크 통신이 실패한 경우
+                      */
+                    }
+                }
+
+                override fun onFailure(call: Call<TranslateResult>, t: Throwable) {
+                    // TODO 에러 상황 처리해야됨
+                }
+            })
     }
 
     @JvmSynthetic
@@ -44,7 +87,6 @@ class VisionApiClient {
                         }
                         callback(sentences)
                     }
-                    // api 호출 결과 처리
                 } else if (resultCode == Activity.RESULT_CANCELED) {
                     /*
                      TODO 에러 상황 처리해야됨
