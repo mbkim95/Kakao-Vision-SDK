@@ -11,7 +11,7 @@ import com.example.vision.KakaoVisionSdk.init
  *  ```kotlin
  *  class MyApplication : Application {
  *      fun onCreate() {
- *          KakaoSdk.init(this, "${NATIVE_APP_KEY}")
+ *          KakaoVisionSdk.init(this, "${REST_API_KEY}")
  *      }
  *  }
  *  ```

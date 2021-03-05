@@ -21,6 +21,13 @@ class VisionApiClient {
         ApiFactory.vapi.create(VisionApi::class.java)
     }
 
+    /**
+     * OCR 기능 사용. 사진을 선택해 해당 사진에 있는 문자를 추출한다.
+     *
+     * @param context OCR 기능을 실행하기 위한 현재 Activity Context
+     * @param lineBreak OCR을 통해 추출한 문장들의 줄바꿈 설정
+     * @param callback 추출한 문자열 반환
+     */
     fun getOcrResult(context: Context, lineBreak: Boolean, callback: (String) -> Unit) {
         selectImage(context, lineBreak, callback)
     }
@@ -34,6 +41,13 @@ class VisionApiClient {
         })
     }
 
+    /**
+     *
+     * @param sentences 번역하고 싶은 문장
+     * @param srcLang 번역하고 싶은 문장이 어떤 언어인지 명시
+     * @param targetLang 어떤 언어로 번역된 결과를 얻고 싶은지 명시
+     * @param callback 번역된 결과 반환
+     */
     fun translateSentence(
         sentences: String,
         srcLang: Language,
