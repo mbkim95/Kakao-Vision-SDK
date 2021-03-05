@@ -34,7 +34,7 @@ interface VisionApi {
     fun getThumbnailImage(
         @Part image: MultipartBody.Part,
         @Part width: MultipartBody.Part,
-        @Part height: MultipartBody.Part
+        @Part height: MultipartBody.Part,
     ): Call<ThumbnailCropResult>
 
     @GET(THUMBNAIL_DETECT_PATH)

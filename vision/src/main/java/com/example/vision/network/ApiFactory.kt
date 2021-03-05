@@ -10,7 +10,7 @@ object ApiFactory {
     val vapi: Retrofit by lazy {
         val client = OkHttpClient.Builder()
             .addInterceptor(RestApiHeaderInterceptor())
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
+            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
 
         Retrofit.Builder()
