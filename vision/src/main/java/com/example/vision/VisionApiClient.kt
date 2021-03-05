@@ -28,7 +28,7 @@ class VisionApiClient {
      * @param lineBreak OCR을 통해 추출한 문장들의 줄바꿈 설정
      * @param callback 추출한 문자열 반환
      */
-    fun getOcrResult(context: Context, lineBreak: Boolean, callback: (String) -> Unit) {
+    fun getOcrResult(context: Context, lineBreak: Boolean = false, callback: (String) -> Unit) {
         selectImage(context, lineBreak, callback)
     }
 
