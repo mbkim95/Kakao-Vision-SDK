@@ -121,41 +121,44 @@ class VisionApiClient {
         )
     }
 
-    @JvmSynthetic
-    internal fun resultReceiver(
-        option: VisionApiOption,
-        callback: (String) -> Unit
-    ): ResultReceiver {
-        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
-            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                if (resultCode == Activity.RESULT_OK) {
-                    resultData?.let { data ->
-                        val image =
-                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
-                        image?.let {
-
-
-                            when (option.api) {
-                                OCR -> callOcrApi(it, option.lineBreak, callback)
-                                THUMBNAIL_CROP -> callThumbnailCropApi(
-                                    it,
-                                    option.width,
-                                    option.height,
-                                    callback
-                                )
-                                THUMBNAIL_DETECT -> {
-                                }
-                                else -> {
-                                    // Receive Fail
-                                }
-                            }
+    fun detectThumbnailImage(
+        imageUrl: String,
+        width: Int,
+        height: Int,
+        callback: (ThumbnailDetectResult) -> Unit
+    ) {
+        visionApi.getDetectedThumbnailImage(imageUrl, width, height)
+            .enqueue(object : Callback<ThumbnailDetectResult> {
+                override fun onResponse(
+                    call: Call<ThumbnailDetectResult>,
+                    response: Response<ThumbnailDetectResult>
+                ) {
+                    if (response.isSuccessful) {
+                        response.body()?.let {
+                            callback(it)
                         }
                     }
-                } else {
-
                 }
-            }
-        }
+
+                override fun onFailure(call: Call<ThumbnailDetectResult>, t: Throwable) {
+                    TODO("Not yet implemented")
+                }
+            })
+    }
+
+    fun detectThumbnailImage(
+        context: Context,
+        width: Int,
+        height: Int,
+        callback: (ThumbnailDetectResult) -> Unit
+    ) {
+        selectImage(
+            context,
+            thumbnailDetectResultReceiver(
+                VisionApiOption(THUMBNAIL_DETECT, width = width, height = height),
+                callback
+            )
+        )
     }
 
     private fun callOcrApi(file: File, lineBreak: Boolean, callback: (String) -> Unit) {
@@ -218,6 +221,104 @@ class VisionApiClient {
                 TODO("Not yet implemented")
             }
         })
+    }
+
+    private fun callThumbnailDetectApi(
+        file: File,
+        width: Int,
+        height: Int,
+        callback: (ThumbnailDetectResult) -> Unit
+    ) {
+        val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
+        val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
+
+        visionApi.getDetectedThumbnailImage(
+            file.convertImageToBinary("image", "application/octet-stream"), w, h
+        ).enqueue(object : Callback<ThumbnailDetectResult> {
+            override fun onResponse(
+                call: Call<ThumbnailDetectResult>,
+                response: Response<ThumbnailDetectResult>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        callback(it)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ThumbnailDetectResult>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
+    @JvmSynthetic
+    internal fun resultReceiver(
+        option: VisionApiOption,
+        callback: (String) -> Unit
+    ): ResultReceiver {
+        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
+            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                if (resultCode == Activity.RESULT_OK) {
+                    resultData?.let { data ->
+                        val image =
+                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
+                        image?.let {
+                            when (option.api) {
+                                OCR -> callOcrApi(it, option.lineBreak, callback)
+                                THUMBNAIL_CROP -> callThumbnailCropApi(
+                                    it,
+                                    option.width,
+                                    option.height,
+                                    callback
+                                )
+                                else -> {
+                                    // Receive Fail
+                                }
+                            }
+                        }
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+
+                } else {
+
+                }
+            }
+        }
+    }
+
+    @JvmSynthetic
+    internal fun thumbnailDetectResultReceiver(
+        option: VisionApiOption,
+        callback: (ThumbnailDetectResult) -> Unit
+    ): ResultReceiver {
+        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
+            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                if (resultCode == Activity.RESULT_OK) {
+                    resultData?.let { data ->
+                        val image =
+                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
+                        image?.let {
+                            when (option.api) {
+                                THUMBNAIL_DETECT -> callThumbnailDetectApi(
+                                    image,
+                                    option.width,
+                                    option.height,
+                                    callback
+                                )
+                                else -> {
+                                    // Receive Fail
+                                }
+                            }
+                        }
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+
+                } else {
+
+                }
+            }
+        }
     }
 
     companion object {
