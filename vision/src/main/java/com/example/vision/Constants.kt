@@ -5,8 +5,7 @@ const val IMAGE_SELECTOR = "image selector"
 
 const val IMAGE_SELECT = 1234
 const val IMAGE_CHOOSE_RESULT = "image choose result"
-const val RUNTIME_EXCEPTION = "RuntimeException"
-const val THROWABLE = "throwable"
+const val EXCEPTION = "Exception"
 
 const val BASE_URL = "https://dapi.kakao.com"
 const val OCR_PATH = "/v2/vision/text/ocr"

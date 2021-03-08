@@ -2,12 +2,12 @@ package com.example.kakaovisionsdk
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
 import com.example.vision.VisionApiClient
 import com.example.vision.model.translate.Language
+import com.google.android.material.snackbar.Snackbar
 
 
 class MainActivity : AppCompatActivity() {
@@ -24,15 +24,19 @@ class MainActivity : AppCompatActivity() {
             listOf(
                 Item.Header("Kakao AI API"),
                 Item.ApiItem("OCR - using device image") {
-                    VisionApiClient.instance.getOcrResult(this) {
-                        val sb = StringBuilder()
-                        it.ocrDetailResult.forEach { result ->
-                            result.recognitionWords.forEach { text ->
-                                sb.append(text)
+                    VisionApiClient.instance.getOcrResult(this) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else {
+                            val sb = StringBuilder()
+                            result?.ocrDetailResult?.forEach { ocr ->
+                                ocr.recognitionWords.forEach { text ->
+                                    sb.append(text)
+                                }
                             }
+                            sentence = sb.toString()
+                            makeSnackbar(sentence)
                         }
-                        sentence = sb.toString()
-                        makeToast(sentence)
                     }
                 },
                 Item.ApiItem("Translate - English to Korean") {
@@ -41,49 +45,85 @@ class MainActivity : AppCompatActivity() {
                             sentence,
                             Language.ENGLISH,
                             Language.KOREAN
-                        ) { result ->
-                            val sb = StringBuilder()
-                            result.translatedText.forEach { list ->
-                                list.forEach {
-                                    sb.append("$it ")
+                        ) { result, error ->
+                            if (error != null) {
+                                makeSnackbar(error.message.toString(), error)
+                            } else if (result != null) {
+                                val sb = StringBuilder()
+                                result.translatedText.forEach { list ->
+                                    list.forEach {
+                                        sb.append("$it ")
+                                    }
                                 }
+                                makeSnackbar(sb.toString())
                             }
-                            makeToast(sb.toString())
                         }
                     } else {
-                        makeToast("OCR을 먼저 실행해주세요")
+                        makeSnackbar("OCR을 먼저 실행해주세요")
                     }
                 },
                 Item.ApiItem("Create Thumbnail - using device image") {
-                    VisionApiClient.instance.createThumbnailImage(this, 400, 400) {
-                        makeToast(it.thumbnailImageUrl)
+                    VisionApiClient.instance.createThumbnailImage(this, 400, 400) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            makeSnackbar(result.thumbnailImageUrl)
+                        }
                     }
                 },
                 Item.ApiItem("Create Thumbnail - using web image url") {
-                    VisionApiClient.instance.createThumbnailImage(RYAN_IMAGE, 400, 400) {
-                        makeToast(it.thumbnailImageUrl)
+                    VisionApiClient.instance.createThumbnailImage(
+                        RYAN_IMAGE,
+                        400,
+                        400
+                    ) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            makeSnackbar(result.thumbnailImageUrl)
+                        }
                     }
                 },
                 Item.ApiItem("Detect Thumbnail - using device image") {
-                    VisionApiClient.instance.detectThumbnailImage(this, 400, 400) {
-                        makeToast("$it")
+                    VisionApiClient.instance.detectThumbnailImage(this, 400, 400) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            makeSnackbar("$result")
+                        }
                     }
                 },
                 Item.ApiItem("Detect Thumbnail - using web image url") {
-                    VisionApiClient.instance.detectThumbnailImage(RYAN_IMAGE, 400, 400) {
-                        makeToast("$it")
+                    VisionApiClient.instance.detectThumbnailImage(
+                        RYAN_IMAGE,
+                        400,
+                        400
+                    ) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            makeSnackbar("$result")
+                        }
                     }
                 },
                 Item.ApiItem("Detect Face - using device image") {
-                    VisionApiClient.instance.detectFace(this) {
-                        makeToast("$it")
+                    VisionApiClient.instance.detectFace(this) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            makeSnackbar("$result")
+                        }
                     }
                 },
                 Item.ApiItem("Detect Face - using web image url") {
-                    VisionApiClient.instance.detectFace(FACE_SAMPLE_IMAGE, 0.4F) {
-                        makeToast("$it")
+                    VisionApiClient.instance.detectFace(FACE_SAMPLE_IMAGE, 0.4F) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            makeSnackbar("$result")
+                        }
                     }
-                }
+                },
             )
         )
 
@@ -93,9 +133,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun makeToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    private fun makeSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
         Log.d("Kakao Vision", message)
+    }
+
+    private fun makeSnackbar(message: String, error: Throwable) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        Log.e("Kakao Vision", message, error)
     }
 
     companion object {

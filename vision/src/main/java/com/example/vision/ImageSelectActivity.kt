@@ -22,10 +22,11 @@ class ImageSelectActivity : AppCompatActivity() {
             intent.extras?.getBundle(KEY_BUNDLE)?.run {
                 resultReceiver = getParcelable<ResultReceiver>(IMAGE_SELECTOR) as ResultReceiver
             }
-        } catch (e: Throwable) {
+            startActivityForResult(IntentFactory.imageSelect(), IMAGE_SELECT)
+        } catch (e: Exception) {
             Log.e("Kakao Vision", "$e")
+            sendError(e)
         }
-        startActivityForResult(IntentFactory.imageSelect(), IMAGE_SELECT)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -47,9 +48,11 @@ class ImageSelectActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    sendFail()
+                    sendError(RuntimeException("image not found"))
                 }
             }
+        } else {
+            sendError(RuntimeException("image not selected"))
         }
         finish()
     }
@@ -60,9 +63,11 @@ class ImageSelectActivity : AppCompatActivity() {
         })
     }
 
-    private fun sendFail() {
-        resultReceiver.send(RESULT_CANCELED, Bundle().apply {
-            putSerializable(RUNTIME_EXCEPTION, java.lang.RuntimeException())
-        })
+    private fun sendError(exception: Exception) {
+        if (this::resultReceiver.isInitialized) {
+            resultReceiver.send(RESULT_CANCELED, Bundle().apply {
+                putSerializable(EXCEPTION, exception)
+            })
+        }
     }
 }

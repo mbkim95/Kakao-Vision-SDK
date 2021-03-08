@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
+import android.util.Log
 import com.example.vision.extension.convertImageToBinary
 import com.example.vision.model.ImageChooseResult
 import com.example.vision.model.VisionApiOption
@@ -36,26 +37,14 @@ class VisionApiClient {
      * @param context OCR 기능을 실행하기 위한 현재 Activity Context
      * @param callback 추출한 결과 반환
      */
-    fun getOcrResult(context: Context, callback: (OcrResult) -> Unit) {
+    fun getOcrResult(context: Context, callback: (result: OcrResult?, error: Throwable?) -> Unit) {
         selectImage(
             context,
             resultReceiver = resultReceiver(
                 VisionApiOption(OCR),
-                callback as (VisionWrapper) -> Unit
+                callback as (VisionWrapper?, Throwable?) -> Unit
             )
         )
-    }
-
-    private fun selectImage(
-        context: Context,
-        resultReceiver: ResultReceiver
-    ) {
-        context.startActivity(Intent(context, ImageSelectActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            putExtra(KEY_BUNDLE, Bundle().apply {
-                putParcelable(IMAGE_SELECTOR, resultReceiver)
-            })
-        })
     }
 
     /**
@@ -70,7 +59,7 @@ class VisionApiClient {
         sentences: String,
         srcLang: Language,
         targetLang: Language,
-        callback: (TranslateResult) -> Unit
+        callback: (result: TranslateResult?, error: Throwable?) -> Unit
     ) {
         visionApi.translateSentence(sentences, srcLang.language, targetLang.language)
             .enqueue(object : Callback<TranslateResult> {
@@ -80,7 +69,7 @@ class VisionApiClient {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            callback(it)
+                            callback(it, null)
                         }
                     } else {
                         /*
@@ -92,7 +81,7 @@ class VisionApiClient {
                 }
 
                 override fun onFailure(call: Call<TranslateResult>, t: Throwable) {
-                    // TODO 에러 상황 처리해야됨
+                    callback(null, t)
                 }
             })
     }
@@ -109,7 +98,7 @@ class VisionApiClient {
         imageUrl: String,
         width: Int,
         height: Int,
-        callback: (ThumbnailCropResult) -> Unit
+        callback: (result: ThumbnailCropResult?, error: Throwable?) -> Unit
     ) {
         visionApi.createThumbnailImage(imageUrl, width, height)
             .enqueue(object : Callback<ThumbnailCropResult> {
@@ -119,7 +108,7 @@ class VisionApiClient {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            callback(it)
+                            callback(it, null)
                         }
                     } else {
 
@@ -127,7 +116,7 @@ class VisionApiClient {
                 }
 
                 override fun onFailure(call: Call<ThumbnailCropResult>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    callback(null, t)
                 }
             })
     }
@@ -144,13 +133,13 @@ class VisionApiClient {
         context: Context,
         width: Int,
         height: Int,
-        callback: (ThumbnailCropResult) -> Unit
+        callback: (result: ThumbnailCropResult?, error: Throwable?) -> Unit
     ) {
         selectImage(
             context,
             resultReceiver(
                 VisionApiOption(THUMBNAIL_CROP, width = width, height = height),
-                callback as (VisionWrapper) -> Unit
+                callback as (VisionWrapper?, Throwable?) -> Unit
             )
         )
     }
@@ -167,7 +156,7 @@ class VisionApiClient {
         imageUrl: String,
         width: Int,
         height: Int,
-        callback: (ThumbnailDetectResult) -> Unit
+        callback: (result: ThumbnailDetectResult?, error: Throwable?) -> Unit
     ) {
         visionApi.detectThumbnailImage(imageUrl, width, height)
             .enqueue(object : Callback<ThumbnailDetectResult> {
@@ -177,13 +166,13 @@ class VisionApiClient {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            callback(it)
+                            callback(it, null)
                         }
                     }
                 }
 
                 override fun onFailure(call: Call<ThumbnailDetectResult>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    callback(null, t)
                 }
             })
     }
@@ -200,13 +189,13 @@ class VisionApiClient {
         context: Context,
         width: Int,
         height: Int,
-        callback: (ThumbnailDetectResult) -> Unit
+        callback: (result: ThumbnailDetectResult?, error: Throwable?) -> Unit
     ) {
         selectImage(
             context,
             resultReceiver(
                 VisionApiOption(THUMBNAIL_DETECT, width = width, height = height),
-                callback as (VisionWrapper) -> Unit
+                callback as (VisionWrapper?, Throwable?) -> Unit
             )
         )
     }
@@ -221,13 +210,13 @@ class VisionApiClient {
     fun detectFace(
         context: Context,
         threshold: Float? = null,
-        callback: (FaceDetectResult) -> Unit
+        callback: (result: FaceDetectResult?, error: Throwable?) -> Unit
     ) {
         selectImage(
             context,
             resultReceiver(
                 VisionApiOption(FACE_DETECT, threshold = threshold),
-                callback as (VisionWrapper) -> Unit
+                callback as (VisionWrapper?, Throwable?) -> Unit
             )
         )
     }
@@ -242,7 +231,7 @@ class VisionApiClient {
     fun detectFace(
         imageUrl: String,
         threshold: Float? = null,
-        callback: (FaceDetectResult) -> Unit
+        callback: (result: FaceDetectResult?, error: Throwable?) -> Unit
     ) {
         val url = MultipartBody.Part.createFormData(IMAGE_URL, imageUrl)
         val th = MultipartBody.Part.createFormData(THRESHOLD, threshold.toString())
@@ -254,18 +243,27 @@ class VisionApiClient {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            callback(it)
+                            callback(it, null)
                         }
                     }
                 }
 
                 override fun onFailure(call: Call<FaceDetectResult>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    callback(null, t)
                 }
             })
     }
 
-    private fun callOcrApi(file: File, callback: (OcrResult) -> Unit) {
+    private fun selectImage(context: Context, resultReceiver: ResultReceiver) {
+        context.startActivity(Intent(context, ImageSelectActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(KEY_BUNDLE, Bundle().apply {
+                putParcelable(IMAGE_SELECTOR, resultReceiver)
+            })
+        })
+    }
+
+    private fun callOcrApi(file: File, callback: (OcrResult?, Throwable?) -> Unit) {
         visionApi.getOcr(
             file.convertImageToBinary("image", "application/octet-stream")
         ).enqueue(object : Callback<OcrResult> {
@@ -275,13 +273,14 @@ class VisionApiClient {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        callback(it)
+                        callback(it, null)
                     }
                 }
             }
 
             override fun onFailure(call: Call<OcrResult>, t: Throwable) {
-                TODO("Not yet implemented")
+                Log.d("Kakao Vision", "onFailure: $t")
+                callback(null, t)
             }
         })
     }
@@ -290,7 +289,7 @@ class VisionApiClient {
         file: File,
         width: Int,
         height: Int,
-        callback: (ThumbnailCropResult) -> Unit
+        callback: (ThumbnailCropResult?, Throwable?) -> Unit
     ) {
         val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
         val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
@@ -304,13 +303,13 @@ class VisionApiClient {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        callback(it)
+                        callback(it, null)
                     }
                 }
             }
 
             override fun onFailure(call: Call<ThumbnailCropResult>, t: Throwable) {
-                TODO("Not yet implemented")
+                callback(null, t)
             }
         })
     }
@@ -319,7 +318,7 @@ class VisionApiClient {
         file: File,
         width: Int,
         height: Int,
-        callback: (ThumbnailDetectResult) -> Unit
+        callback: (ThumbnailDetectResult?, Throwable?) -> Unit
     ) {
         val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
         val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
@@ -333,13 +332,13 @@ class VisionApiClient {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        callback(it)
+                        callback(it, null)
                     }
                 }
             }
 
             override fun onFailure(call: Call<ThumbnailDetectResult>, t: Throwable) {
-                TODO("Not yet implemented")
+                callback(null, t)
             }
         })
     }
@@ -347,7 +346,7 @@ class VisionApiClient {
     private fun callFaceDetectApi(
         file: File,
         threshold: Float? = null,
-        callback: (FaceDetectResult) -> Unit
+        callback: (FaceDetectResult?, Throwable?) -> Unit
     ) {
         val th = MultipartBody.Part.createFormData(THRESHOLD, threshold.toString())
         visionApi.detectFace(
@@ -360,13 +359,13 @@ class VisionApiClient {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            callback(it)
+                            callback(it, null)
                         }
                     }
                 }
 
                 override fun onFailure(call: Call<FaceDetectResult>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    callback(null, t)
                 }
             })
     }
@@ -374,7 +373,7 @@ class VisionApiClient {
     @JvmSynthetic
     internal fun resultReceiver(
         option: VisionApiOption,
-        callback: (VisionWrapper) -> Unit
+        callback: (VisionWrapper?, Throwable?) -> Unit
     ): ResultReceiver {
         return object : ResultReceiver(Handler(Looper.getMainLooper())) {
             override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
@@ -405,9 +404,12 @@ class VisionApiClient {
                         }
                     }
                 } else if (resultCode == Activity.RESULT_CANCELED) {
-
+                    val error = resultData?.getSerializable(EXCEPTION) as Throwable
+                    callback(null, error)
                 } else {
-
+                    val error =
+                        IllegalArgumentException("Unknown resultCode in VisionApiClient#onReceivedResult()")
+                    callback(null, error)
                 }
             }
         }
