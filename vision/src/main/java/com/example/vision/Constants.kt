@@ -4,7 +4,7 @@ const val KEY_BUNDLE = "bundle"
 const val IMAGE_SELECTOR = "image selector"
 
 const val IMAGE_SELECT = 1234
-const val OCR_RESULT = "ocr result"
+const val IMAGE_CHOOSE_RESULT = "image choose result"
 const val RUNTIME_EXCEPTION = "RuntimeException"
 const val THROWABLE = "throwable"
 

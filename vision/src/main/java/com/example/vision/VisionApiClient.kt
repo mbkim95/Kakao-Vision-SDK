@@ -7,15 +7,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
-import com.example.vision.model.Language
-import com.example.vision.model.OcrResult
-import com.example.vision.model.ThumbnailCropResult
-import com.example.vision.model.TranslateResult
+import com.example.vision.extension.convertImageToBinary
+import com.example.vision.model.*
 import com.example.vision.network.ApiFactory
 import com.example.vision.network.VisionApi
+import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 
 class VisionApiClient {
     private val visionApi by lazy {
@@ -30,23 +30,20 @@ class VisionApiClient {
      * @param callback 추출한 문자열 반환
      */
     fun getOcrResult(context: Context, lineBreak: Boolean = false, callback: (String) -> Unit) {
-        selectImage(context, OCR, resultReceiver = ocrResultReceiver(lineBreak, callback))
+        selectImage(
+            context,
+            resultReceiver = resultReceiver(VisionApiOption(OCR, lineBreak), callback)
+        )
     }
 
     private fun selectImage(
         context: Context,
-        api: String,
-        width: Int = 0,
-        height: Int = 0,
         resultReceiver: ResultReceiver
     ) {
         context.startActivity(Intent(context, ImageSelectActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             putExtra(KEY_BUNDLE, Bundle().apply {
                 putParcelable(IMAGE_SELECTOR, resultReceiver)
-                putString(API_CODE, api)
-                putInt(WIDTH, width)
-                putInt(HEIGHT, height)
             })
         })
     }
@@ -117,71 +114,118 @@ class VisionApiClient {
     fun getThumbnailImage(context: Context, width: Int, height: Int, callback: (String) -> Unit) {
         selectImage(
             context,
-            THUMBNAIL,
-            width,
-            height,
-            thumbnailCropResultReceiver(width, height, callback)
+            resultReceiver(
+                VisionApiOption(THUMBNAIL_CROP, width = width, height = height),
+                callback
+            )
         )
     }
 
     @JvmSynthetic
-    internal fun ocrResultReceiver(lineBreak: Boolean, callback: (String) -> Unit): ResultReceiver {
+    internal fun resultReceiver(
+        option: VisionApiOption,
+        callback: (String) -> Unit
+    ): ResultReceiver {
         return object : ResultReceiver(Handler(Looper.getMainLooper())) {
             override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
                 if (resultCode == Activity.RESULT_OK) {
-                    resultData?.let {
-                        val result = it.getParcelable<OcrResult>(OCR_RESULT)
-                        val sb = StringBuilder()
-                        result?.ocrDetailResult?.forEach { ocr ->
+                    resultData?.let { data ->
+                        val image =
+                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
+                        image?.let {
+
+
+                            when (option.api) {
+                                OCR -> callOcrApi(it, option.lineBreak, callback)
+                                THUMBNAIL_CROP -> callThumbnailCropApi(
+                                    it,
+                                    option.width,
+                                    option.height,
+                                    callback
+                                )
+                                THUMBNAIL_DETECT -> {
+                                }
+                                else -> {
+                                    // Receive Fail
+                                }
+                            }
+                        }
+                    }
+                } else {
+
+                }
+            }
+        }
+    }
+
+    private fun callOcrApi(file: File, lineBreak: Boolean, callback: (String) -> Unit) {
+        visionApi.getOcr(
+            file.convertImageToBinary("image", "application/octet-stream")
+        ).enqueue(object : Callback<OcrResult> {
+            override fun onResponse(
+                call: Call<OcrResult>,
+                response: Response<OcrResult>
+            ) {
+                if (response.isSuccessful) {
+                    val sb = StringBuilder()
+                    response.body()?.let {
+                        it.ocrDetailResult.forEach { ocr ->
                             sb.append(ocr.recognitionWords[0] + " ")
                         }
                         val sentences = sb.toString().run {
                             if (lineBreak) {
-                                this.replace(".", ".\n").replace("?", "?\n").replace("!", "!\n")
+                                this.replace(".", ".\n").replace("?", "?\n")
+                                    .replace("!", "!\n")
                             } else {
                                 this
                             }
                         }
                         callback(sentences)
                     }
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-                    /*
-                     TODO 에러 상황 처리해야됨
-                     1. 이미지는 전송했지만 413 뜨는 경우 (Payload Too Large)
-                     2. 네트워크 통신이 실패한 경우
-                     */
                 }
             }
-        }
+
+            override fun onFailure(call: Call<OcrResult>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
-    @JvmSynthetic
-    internal fun thumbnailCropResultReceiver(
+    private fun callThumbnailCropApi(
+        file: File,
         width: Int,
         height: Int,
         callback: (String) -> Unit
-    ): ResultReceiver {
-        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
-            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                if (resultCode == Activity.RESULT_OK) {
+    ) {
+        val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
+        val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
 
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-                    /*
-                     TODO 에러 상황 처리해야됨
-                     1. 이미지는 전송했지만 413 뜨는 경우 (Payload Too Large)
-                     2. 네트워크 통신이 실패한 경우
-                     */
+        visionApi.getThumbnailImage(
+            file.convertImageToBinary("image", "application/octet-stream"), w, h
+        ).enqueue(object : Callback<ThumbnailCropResult> {
+            override fun onResponse(
+                call: Call<ThumbnailCropResult>,
+                response: Response<ThumbnailCropResult>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        callback(it.thumbnailImageUrl)
+                    }
                 }
             }
-        }
+
+            override fun onFailure(call: Call<ThumbnailCropResult>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
     companion object {
         @JvmStatic
         val instance by lazy { VisionApiClient() }
 
-        const val API_CODE = "Kakao Vision"
         const val OCR = "ocr"
-        const val THUMBNAIL = "thumbnail"
+        const val THUMBNAIL_CROP = "thumbnail crop"
+        const val THUMBNAIL_DETECT = "thumbnail detect"
     }
 }
