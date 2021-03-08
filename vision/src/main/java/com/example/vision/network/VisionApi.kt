@@ -24,7 +24,7 @@ interface VisionApi {
     ): Call<TranslateResult>
 
     @GET(THUMBNAIL_CROP_PATH)
-    fun getThumbnailImage(
+    fun createThumbnailImage(
         @Query(IMAGE_URL) url: String,
         @Query(WIDTH) width: Int,
         @Query(HEIGHT) height: Int
@@ -32,14 +32,14 @@ interface VisionApi {
 
     @Multipart
     @POST(THUMBNAIL_CROP_PATH)
-    fun getThumbnailImage(
+    fun createThumbnailImage(
         @Part image: MultipartBody.Part,
         @Part width: MultipartBody.Part,
         @Part height: MultipartBody.Part,
     ): Call<ThumbnailCropResult>
 
     @GET(THUMBNAIL_DETECT_PATH)
-    fun getDetectedThumbnailImage(
+    fun detectThumbnailImage(
         @Query(IMAGE_URL) url: String,
         @Query(WIDTH) width: Int,
         @Query(HEIGHT) height: Int
@@ -47,7 +47,7 @@ interface VisionApi {
 
     @Multipart
     @POST(THUMBNAIL_DETECT_PATH)
-    fun getDetectedThumbnailImage(
+    fun detectThumbnailImage(
         @Part image: MultipartBody.Part,
         @Part width: MultipartBody.Part,
         @Part height: MultipartBody.Part

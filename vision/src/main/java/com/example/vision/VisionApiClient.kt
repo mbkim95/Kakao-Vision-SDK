@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
-import android.util.Log
 import com.example.vision.extension.convertImageToBinary
 import com.example.vision.model.ImageChooseResult
 import com.example.vision.model.VisionApiOption
@@ -60,10 +59,11 @@ class VisionApiClient {
     }
 
     /**
+     * 사용자가 원하는 언어로 문장 번역
      *
      * @param sentences 번역하고 싶은 문장
-     * @param srcLang 번역하고 싶은 문장이 어떤 언어인지 명시
-     * @param targetLang 어떤 언어로 번역된 결과를 얻고 싶은지 명시
+     * @param srcLang 번역하고 싶은 문장이 어떤 언어인지 명시 [Language]
+     * @param targetLang 어떤 언어로 번역된 결과를 얻고 싶은지 명시 [Language]
      * @param callback 번역된 결과 반환
      */
     fun translateSentence(
@@ -97,13 +97,21 @@ class VisionApiClient {
             })
     }
 
-    fun getThumbnailImage(
+    /**
+     * 웹 이미지로 썸네일 생성
+     *
+     * @param imageUrl 썸네일을 생성하고 싶은 이미지의 url
+     * @param width 생성할 썸네일의 가로 길이
+     * @param height 생성할 썸네일의 세로 길이
+     * @param callback 썸네일 생성 결과 반환
+     */
+    fun createThumbnailImage(
         imageUrl: String,
         width: Int,
         height: Int,
         callback: (ThumbnailCropResult) -> Unit
     ) {
-        visionApi.getThumbnailImage(imageUrl, width, height)
+        visionApi.createThumbnailImage(imageUrl, width, height)
             .enqueue(object : Callback<ThumbnailCropResult> {
                 override fun onResponse(
                     call: Call<ThumbnailCropResult>,
@@ -124,7 +132,15 @@ class VisionApiClient {
             })
     }
 
-    fun getThumbnailImage(
+    /**
+     * 사용자의 디바이스에 있는 사진으로 썸네일 생성
+     *
+     * @param context 이미지 선택 Activity를 실행하기 위한 현재 Activity Context
+     * @param width 생성할 썸네일의 가로 길이
+     * @param height 생성할 썸네일의 세로 길이
+     * @param callback 썸네일 생성 결과 반환
+     */
+    fun createThumbnailImage(
         context: Context,
         width: Int,
         height: Int,
@@ -139,13 +155,21 @@ class VisionApiClient {
         )
     }
 
+    /**
+     * 웹 이미지에서 썸네일 생성하기 적절한 부분을 검출
+     *
+     * @param imageUrl 검출하고 싶은 이미지의 url
+     * @param width 생성하고 싶은 썸네일의 가로 길이
+     * @param height 생성하고 싶은 썸네일의 세로 길이
+     * @param callback 추천 결과 반환
+     */
     fun detectThumbnailImage(
         imageUrl: String,
         width: Int,
         height: Int,
         callback: (ThumbnailDetectResult) -> Unit
     ) {
-        visionApi.getDetectedThumbnailImage(imageUrl, width, height)
+        visionApi.detectThumbnailImage(imageUrl, width, height)
             .enqueue(object : Callback<ThumbnailDetectResult> {
                 override fun onResponse(
                     call: Call<ThumbnailDetectResult>,
@@ -164,6 +188,14 @@ class VisionApiClient {
             })
     }
 
+    /**
+     * 사용자의 디바이스에 있는 사진으로 썸네일 생성하기 적절한 부분을 검출
+     *
+     * @param context 이미지 선택 Activity를 실행하기 위한 현재 Activity Context
+     * @param width 생성하고 싶은 썸네일의 가로 길이
+     * @param height 생성하고 싶은 썸네일의 세로 길이
+     * @param callback 추천 결과 반환
+     */
     fun detectThumbnailImage(
         context: Context,
         width: Int,
@@ -179,6 +211,13 @@ class VisionApiClient {
         )
     }
 
+    /**
+     * 사용자의 디바이스에 있는 사진으로 사람 얼굴 검출
+     *
+     * @param context 이미지 선택 Activity를 실행하기 위한 현재 Activity Context
+     * @param threshold 검출된 얼굴이 오검출인지를 판단하기 위해 사용하는 기준값. 0 ~ 1.0 사이의 값 (기본값 0.7)
+     * @param callback 검출된 결과 반환
+     */
     fun detectFace(
         context: Context,
         threshold: Float? = null,
@@ -193,6 +232,13 @@ class VisionApiClient {
         )
     }
 
+    /**
+     * 웹 이미지로 사람 얼굴 검출
+     *
+     * @param imageUrl 얼굴을 검출하고 싶은 이미지의 url
+     * @param threshold 검출된 얼굴이 오검출인지를 판단하기 위해 사용하는 기준값. 0 ~ 1.0 사이의 값 (기본값 0.7)
+     * @param callback 검출된 결과 반환
+     */
     fun detectFace(
         imageUrl: String,
         threshold: Float? = null,
@@ -249,7 +295,7 @@ class VisionApiClient {
         val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
         val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
 
-        visionApi.getThumbnailImage(
+        visionApi.createThumbnailImage(
             file.convertImageToBinary("image", "application/octet-stream"), w, h
         ).enqueue(object : Callback<ThumbnailCropResult> {
             override fun onResponse(
@@ -278,7 +324,7 @@ class VisionApiClient {
         val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
         val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
 
-        visionApi.getDetectedThumbnailImage(
+        visionApi.detectThumbnailImage(
             file.convertImageToBinary("image", "application/octet-stream"), w, h
         ).enqueue(object : Callback<ThumbnailDetectResult> {
             override fun onResponse(
@@ -303,7 +349,6 @@ class VisionApiClient {
         threshold: Float? = null,
         callback: (FaceDetectResult) -> Unit
     ) {
-        Log.d("http", "callFaceDetectApi: $threshold")
         val th = MultipartBody.Part.createFormData(THRESHOLD, threshold.toString())
         visionApi.detectFace(
             file.convertImageToBinary("image", "application/octet-stream"), th
