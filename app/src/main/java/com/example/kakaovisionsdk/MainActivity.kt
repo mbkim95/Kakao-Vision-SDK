@@ -18,7 +18,8 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             selectBtn.setOnClickListener {
                 VisionApiClient.instance.getOcrResult(applicationContext, lineBreak = false) {
-                    extractedTv.text = it
+                    Log.d("Kakao Vision", "onCreate: $it")
+//                    extractedTv.text = it
                 }
             }
             translateBtn.setOnClickListener {
@@ -34,9 +35,12 @@ class MainActivity : AppCompatActivity() {
 //                    300,
 //                    300
 //                )
-                VisionApiClient.instance.getThumbnailImage(this@MainActivity, 300, 300) {
+//                VisionApiClient.instance.getThumbnailImage(this@MainActivity, 300, 300) {
+//                    Log.d("Kakao Vision", "onCreate: $it")
+////                    resultTv.text = it
+//                }
+                VisionApiClient.instance.detectFace(this@MainActivity) {
                     Log.d("Kakao Vision", "onCreate: $it")
-                    resultTv.text = it
                 }
             }
         }

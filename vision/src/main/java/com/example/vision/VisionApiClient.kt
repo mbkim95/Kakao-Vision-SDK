@@ -11,6 +11,7 @@ import android.util.Log
 import com.example.vision.extension.convertImageToBinary
 import com.example.vision.model.ImageChooseResult
 import com.example.vision.model.VisionApiOption
+import com.example.vision.model.VisionWrapper
 import com.example.vision.model.face.FaceDetectResult
 import com.example.vision.model.ocr.OcrResult
 import com.example.vision.model.thumbnail.ThumbnailCropResult
@@ -34,13 +35,15 @@ class VisionApiClient {
      * OCR 기능 사용. 사진을 선택해 해당 사진에 있는 문자를 추출한다.
      *
      * @param context OCR 기능을 실행하기 위한 현재 Activity Context
-     * @param lineBreak OCR을 통해 추출한 문장들의 줄바꿈 설정
-     * @param callback 추출한 문자열 반환
+     * @param callback 추출한 결과 반환
      */
-    fun getOcrResult(context: Context, lineBreak: Boolean = false, callback: (String) -> Unit) {
+    fun getOcrResult(context: Context, callback: (OcrResult) -> Unit) {
         selectImage(
             context,
-            resultReceiver = resultReceiver(VisionApiOption(OCR, lineBreak), callback)
+            resultReceiver = resultReceiver(
+                VisionApiOption(OCR),
+                callback as (VisionWrapper) -> Unit
+            )
         )
     }
 
@@ -67,7 +70,7 @@ class VisionApiClient {
         sentences: String,
         srcLang: Language,
         targetLang: Language,
-        callback: (String) -> Unit
+        callback: (TranslateResult) -> Unit
     ) {
         visionApi.translateSentence(sentences, srcLang.language, targetLang.language)
             .enqueue(object : Callback<TranslateResult> {
@@ -76,12 +79,9 @@ class VisionApiClient {
                     response: Response<TranslateResult>
                 ) {
                     if (response.isSuccessful) {
-                        // TODO: StringBuilder 확장함수 구현 및 관련 코드 리팩토링
-                        val translateResult = StringBuilder()
-                        response.body()?.translatedText?.get(0)?.forEach {
-                            translateResult.append("$it ")
+                        response.body()?.let {
+                            callback(it)
                         }
-                        callback(translateResult.toString())
                     } else {
                         /*
                         TODO: 에러 상황 처리해야됨
@@ -97,7 +97,12 @@ class VisionApiClient {
             })
     }
 
-    fun getThumbnailImage(imageUrl: String, width: Int, height: Int, callback: (String) -> Unit) {
+    fun getThumbnailImage(
+        imageUrl: String,
+        width: Int,
+        height: Int,
+        callback: (ThumbnailCropResult) -> Unit
+    ) {
         visionApi.getThumbnailImage(imageUrl, width, height)
             .enqueue(object : Callback<ThumbnailCropResult> {
                 override fun onResponse(
@@ -106,7 +111,7 @@ class VisionApiClient {
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
-                            callback(it.thumbnailImageUrl)
+                            callback(it)
                         }
                     } else {
 
@@ -119,12 +124,17 @@ class VisionApiClient {
             })
     }
 
-    fun getThumbnailImage(context: Context, width: Int, height: Int, callback: (String) -> Unit) {
+    fun getThumbnailImage(
+        context: Context,
+        width: Int,
+        height: Int,
+        callback: (ThumbnailCropResult) -> Unit
+    ) {
         selectImage(
             context,
             resultReceiver(
                 VisionApiOption(THUMBNAIL_CROP, width = width, height = height),
-                callback
+                callback as (VisionWrapper) -> Unit
             )
         )
     }
@@ -162,9 +172,9 @@ class VisionApiClient {
     ) {
         selectImage(
             context,
-            thumbnailDetectResultReceiver(
+            resultReceiver(
                 VisionApiOption(THUMBNAIL_DETECT, width = width, height = height),
-                callback
+                callback as (VisionWrapper) -> Unit
             )
         )
     }
@@ -174,10 +184,20 @@ class VisionApiClient {
         threshold: Float? = null,
         callback: (FaceDetectResult) -> Unit
     ) {
-        selectImage(context, faceDetectResultReceiver(VisionApiOption(FACE_DETECT, threshold = threshold), callback = callback))
+        selectImage(
+            context,
+            resultReceiver(
+                VisionApiOption(FACE_DETECT, threshold = threshold),
+                callback as (VisionWrapper) -> Unit
+            )
+        )
     }
 
-    fun detectFace(imageUrl: String, threshold: Float? = null, callback: (FaceDetectResult) -> Unit){
+    fun detectFace(
+        imageUrl: String,
+        threshold: Float? = null,
+        callback: (FaceDetectResult) -> Unit
+    ) {
         val url = MultipartBody.Part.createFormData(IMAGE_URL, imageUrl)
         val th = MultipartBody.Part.createFormData(THRESHOLD, threshold.toString())
         visionApi.detectFace(url, th).enqueue(
@@ -199,7 +219,7 @@ class VisionApiClient {
             })
     }
 
-    private fun callOcrApi(file: File, lineBreak: Boolean, callback: (String) -> Unit) {
+    private fun callOcrApi(file: File, callback: (OcrResult) -> Unit) {
         visionApi.getOcr(
             file.convertImageToBinary("image", "application/octet-stream")
         ).enqueue(object : Callback<OcrResult> {
@@ -208,20 +228,8 @@ class VisionApiClient {
                 response: Response<OcrResult>
             ) {
                 if (response.isSuccessful) {
-                    val sb = StringBuilder()
                     response.body()?.let {
-                        it.ocrDetailResult.forEach { ocr ->
-                            sb.append(ocr.recognitionWords[0] + " ")
-                        }
-                        val sentences = sb.toString().run {
-                            if (lineBreak) {
-                                this.replace(".", ".\n").replace("?", "?\n")
-                                    .replace("!", "!\n")
-                            } else {
-                                this
-                            }
-                        }
-                        callback(sentences)
+                        callback(it)
                     }
                 }
             }
@@ -236,7 +244,7 @@ class VisionApiClient {
         file: File,
         width: Int,
         height: Int,
-        callback: (String) -> Unit
+        callback: (ThumbnailCropResult) -> Unit
     ) {
         val w = MultipartBody.Part.createFormData(WIDTH, width.toString())
         val h = MultipartBody.Part.createFormData(HEIGHT, height.toString())
@@ -250,7 +258,7 @@ class VisionApiClient {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        callback(it.thumbnailImageUrl)
+                        callback(it)
                     }
                 }
             }
@@ -321,7 +329,7 @@ class VisionApiClient {
     @JvmSynthetic
     internal fun resultReceiver(
         option: VisionApiOption,
-        callback: (String) -> Unit
+        callback: (VisionWrapper) -> Unit
     ): ResultReceiver {
         return object : ResultReceiver(Handler(Looper.getMainLooper())) {
             override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
@@ -331,75 +339,19 @@ class VisionApiClient {
                             data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
                         image?.let {
                             when (option.api) {
-                                OCR -> callOcrApi(it, option.lineBreak, callback)
+                                OCR -> callOcrApi(it, callback)
                                 THUMBNAIL_CROP -> callThumbnailCropApi(
                                     it,
                                     option.width,
                                     option.height,
                                     callback
                                 )
-                                else -> {
-                                    // Receive Fail
-                                }
-                            }
-                        }
-                    }
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-
-                } else {
-
-                }
-            }
-        }
-    }
-
-    @JvmSynthetic
-    internal fun thumbnailDetectResultReceiver(
-        option: VisionApiOption,
-        callback: (ThumbnailDetectResult) -> Unit
-    ): ResultReceiver {
-        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
-            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                if (resultCode == Activity.RESULT_OK) {
-                    resultData?.let { data ->
-                        val image =
-                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
-                        image?.let {
-                            when (option.api) {
                                 THUMBNAIL_DETECT -> callThumbnailDetectApi(
                                     image,
                                     option.width,
                                     option.height,
                                     callback
                                 )
-                                else -> {
-                                    // Receive Fail
-                                }
-                            }
-                        }
-                    }
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-
-                } else {
-
-                }
-            }
-        }
-    }
-
-    @JvmSynthetic
-    internal fun faceDetectResultReceiver(
-        option: VisionApiOption,
-        callback: (FaceDetectResult) -> Unit
-    ): ResultReceiver {
-        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
-            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                if (resultCode == Activity.RESULT_OK) {
-                    resultData?.let { data ->
-                        val image =
-                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
-                        image?.let {
-                            when (option.api) {
                                 FACE_DETECT -> callFaceDetectApi(image, option.threshold, callback)
                                 else -> {
                                     // Receive Fail
@@ -423,6 +375,6 @@ class VisionApiClient {
         const val OCR = "ocr"
         const val THUMBNAIL_CROP = "thumbnail crop"
         const val THUMBNAIL_DETECT = "thumbnail detect"
-        const val FACE_DETECT = "thumbnail detect"
+        const val FACE_DETECT = "face detect"
     }
 }
