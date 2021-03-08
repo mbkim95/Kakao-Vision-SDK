@@ -13,6 +13,7 @@ const val OCR_PATH = "/v2/vision/text/ocr"
 const val TRANSLATE_PATH = "/v2/translation/translate"
 const val THUMBNAIL_CROP_PATH = "/v2/vision/thumbnail/crop"
 const val THUMBNAIL_DETECT_PATH = "/v2/vision/thumbnail/detect"
+const val FACE_DETECT = "/v2/vision/face/detect"
 
 const val AUTH_HEADER = "Authorization"
 const val KAKAO_AK = "KakaoAK %s"
@@ -24,6 +25,7 @@ const val TARGET_LANGUAGE = "target_lang"
 const val IMAGE_URL = "image_url"
 const val WIDTH = "width"
 const val HEIGHT = "height"
+const val THRESHOLD = "threshold"
 
 const val TYPE_IMAGE = "image/*"
 

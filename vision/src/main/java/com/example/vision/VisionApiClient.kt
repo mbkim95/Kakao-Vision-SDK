@@ -7,8 +7,16 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ResultReceiver
+import android.util.Log
 import com.example.vision.extension.convertImageToBinary
-import com.example.vision.model.*
+import com.example.vision.model.ImageChooseResult
+import com.example.vision.model.VisionApiOption
+import com.example.vision.model.face.FaceDetectResult
+import com.example.vision.model.ocr.OcrResult
+import com.example.vision.model.thumbnail.ThumbnailCropResult
+import com.example.vision.model.thumbnail.ThumbnailDetectResult
+import com.example.vision.model.translate.Language
+import com.example.vision.model.translate.TranslateResult
 import com.example.vision.network.ApiFactory
 import com.example.vision.network.VisionApi
 import okhttp3.MultipartBody
@@ -161,6 +169,36 @@ class VisionApiClient {
         )
     }
 
+    fun detectFace(
+        context: Context,
+        threshold: Float? = null,
+        callback: (FaceDetectResult) -> Unit
+    ) {
+        selectImage(context, faceDetectResultReceiver(VisionApiOption(FACE_DETECT, threshold = threshold), callback = callback))
+    }
+
+    fun detectFace(imageUrl: String, threshold: Float? = null, callback: (FaceDetectResult) -> Unit){
+        val url = MultipartBody.Part.createFormData(IMAGE_URL, imageUrl)
+        val th = MultipartBody.Part.createFormData(THRESHOLD, threshold.toString())
+        visionApi.detectFace(url, th).enqueue(
+            object : Callback<FaceDetectResult> {
+                override fun onResponse(
+                    call: Call<FaceDetectResult>,
+                    response: Response<FaceDetectResult>
+                ) {
+                    if (response.isSuccessful) {
+                        response.body()?.let {
+                            callback(it)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<FaceDetectResult>, t: Throwable) {
+                    TODO("Not yet implemented")
+                }
+            })
+    }
+
     private fun callOcrApi(file: File, lineBreak: Boolean, callback: (String) -> Unit) {
         visionApi.getOcr(
             file.convertImageToBinary("image", "application/octet-stream")
@@ -252,6 +290,34 @@ class VisionApiClient {
         })
     }
 
+    private fun callFaceDetectApi(
+        file: File,
+        threshold: Float? = null,
+        callback: (FaceDetectResult) -> Unit
+    ) {
+        Log.d("http", "callFaceDetectApi: $threshold")
+        val th = MultipartBody.Part.createFormData(THRESHOLD, threshold.toString())
+        visionApi.detectFace(
+            file.convertImageToBinary("image", "application/octet-stream"), th
+        ).enqueue(
+            object : Callback<FaceDetectResult> {
+                override fun onResponse(
+                    call: Call<FaceDetectResult>,
+                    response: Response<FaceDetectResult>
+                ) {
+                    if (response.isSuccessful) {
+                        response.body()?.let {
+                            callback(it)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<FaceDetectResult>, t: Throwable) {
+                    TODO("Not yet implemented")
+                }
+            })
+    }
+
     @JvmSynthetic
     internal fun resultReceiver(
         option: VisionApiOption,
@@ -321,6 +387,35 @@ class VisionApiClient {
         }
     }
 
+    @JvmSynthetic
+    internal fun faceDetectResultReceiver(
+        option: VisionApiOption,
+        callback: (FaceDetectResult) -> Unit
+    ): ResultReceiver {
+        return object : ResultReceiver(Handler(Looper.getMainLooper())) {
+            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                if (resultCode == Activity.RESULT_OK) {
+                    resultData?.let { data ->
+                        val image =
+                            data.getParcelable<ImageChooseResult>(IMAGE_CHOOSE_RESULT)?.image
+                        image?.let {
+                            when (option.api) {
+                                FACE_DETECT -> callFaceDetectApi(image, option.threshold, callback)
+                                else -> {
+                                    // Receive Fail
+                                }
+                            }
+                        }
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+
+                } else {
+
+                }
+            }
+        }
+    }
+
     companion object {
         @JvmStatic
         val instance by lazy { VisionApiClient() }
@@ -328,5 +423,6 @@ class VisionApiClient {
         const val OCR = "ocr"
         const val THUMBNAIL_CROP = "thumbnail crop"
         const val THUMBNAIL_DETECT = "thumbnail detect"
+        const val FACE_DETECT = "thumbnail detect"
     }
 }

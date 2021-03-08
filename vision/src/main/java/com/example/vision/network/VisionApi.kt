@@ -1,10 +1,11 @@
 package com.example.vision.network
 
 import com.example.vision.*
-import com.example.vision.model.OcrResult
-import com.example.vision.model.ThumbnailCropResult
-import com.example.vision.model.ThumbnailDetectResult
-import com.example.vision.model.TranslateResult
+import com.example.vision.model.face.FaceDetectResult
+import com.example.vision.model.ocr.OcrResult
+import com.example.vision.model.thumbnail.ThumbnailCropResult
+import com.example.vision.model.thumbnail.ThumbnailDetectResult
+import com.example.vision.model.translate.TranslateResult
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
@@ -51,4 +52,11 @@ interface VisionApi {
         @Part width: MultipartBody.Part,
         @Part height: MultipartBody.Part
     ): Call<ThumbnailDetectResult>
+
+    @Multipart
+    @POST(FACE_DETECT)
+    fun detectFace(
+        @Part image: MultipartBody.Part,
+        @Part threshold: MultipartBody.Part? = null
+    ): Call<FaceDetectResult>
 }
