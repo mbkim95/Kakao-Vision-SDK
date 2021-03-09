@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
+import com.example.kakaovisionsdk.face.FaceDetectActivity
 import com.example.kakaovisionsdk.thumbnail.ThumbnailCropActivity
 import com.example.kakaovisionsdk.thumbnail.ThumbnailCropUrlActivity
 import com.example.kakaovisionsdk.translate.TranslateActivity
@@ -144,16 +145,17 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 Item.ApiItem("Detect Face - using web image url") {
-                    VisionApiClient.instance.detectFace(
-                        FACE_SAMPLE_IMAGE,
-                        0.4F
-                    ) { result, error ->
-                        if (error != null) {
-                            makeSnackbar(error.message.toString(), error)
-                        } else if (result != null) {
-                            makeSnackbar("$result")
-                        }
-                    }
+                    startActivity(Intent(this, FaceDetectActivity::class.java))
+//                    VisionApiClient.instance.detectFace(
+//                        FACE_SAMPLE_IMAGE,
+//                        0.4F
+//                    ) { result, error ->
+//                        if (error != null) {
+//                            makeSnackbar(error.message.toString(), error)
+//                        } else if (result != null) {
+//                            makeSnackbar("$result")
+//                        }
+//                    }
                 },
             )
         )

@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".GlobalApplication"
@@ -14,8 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KakaoVisionSDK"
         android:usesCleartextTraffic="true">
+        <activity android:name=".face.FaceDetectActivity"></activity>
         <activity android:name=".thumbnail.ThumbnailCropActivity" />
         <activity android:name=".thumbnail.ThumbnailCropUrlActivity" />
+        <activity android:name=".thumbnail.ThumbnailDetectActivity" />
         <activity android:name=".translate.TranslateActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
