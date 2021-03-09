@@ -7,12 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
 import com.example.kakaovisionsdk.face.FaceDetectActivity
+import com.example.kakaovisionsdk.ocr.OcrActivity
 import com.example.kakaovisionsdk.thumbnail.ThumbnailCropActivity
 import com.example.kakaovisionsdk.thumbnail.ThumbnailCropUrlActivity
 import com.example.kakaovisionsdk.translate.TranslateActivity
 import com.example.vision.VisionApiClient
 import com.google.android.material.snackbar.Snackbar
-import com.kakao.sdk.talk.TalkApiClient
 import com.kakao.sdk.user.UserApiClient
 
 
@@ -69,36 +69,9 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 },
-                Item.Header("KakaoTalk API"),
-                Item.ApiItem("send OCR message to friend") {
-                    TalkApiClient.instance.friends { friends, error ->
-                        if (error != null) {
-                            makeSnackbar("친구 목록 가져오기 실패", error)
-                        } else {
-                            if (friends?.elements.isNullOrEmpty()) {
-                                makeSnackbar("서비스와 연결된 친구 목록이 없습니다")
-                            } else {
-                                // 친구 선택하는 Activity 띄우기
-                            }
-                        }
-                    }
-                },
                 Item.Header("Kakao Vision API"),
                 Item.ApiItem("OCR - using device image") {
-                    VisionApiClient.instance.getOcrResult(this) { result, error ->
-                        if (error != null) {
-                            makeSnackbar(error.message.toString(), error)
-                        } else {
-                            val sb = StringBuilder()
-                            result?.ocrDetailResult?.forEach { ocr ->
-                                ocr.recognitionWords.forEach { text ->
-                                    sb.append(text)
-                                }
-                            }
-                            sentence = sb.toString()
-                            makeSnackbar(sentence)
-                        }
-                    }
+                    startActivity(Intent(this, OcrActivity::class.java))
                 },
                 Item.ApiItem("Translate") {
                     startActivity(Intent(this, TranslateActivity::class.java))
@@ -146,16 +119,6 @@ class MainActivity : AppCompatActivity() {
                 },
                 Item.ApiItem("Detect Face - using web image url") {
                     startActivity(Intent(this, FaceDetectActivity::class.java))
-//                    VisionApiClient.instance.detectFace(
-//                        FACE_SAMPLE_IMAGE,
-//                        0.4F
-//                    ) { result, error ->
-//                        if (error != null) {
-//                            makeSnackbar(error.message.toString(), error)
-//                        } else if (result != null) {
-//                            makeSnackbar("$result")
-//                        }
-//                    }
                 },
             )
         )
