@@ -23,6 +23,7 @@ import com.example.vision.network.VisionApi
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.HttpException
 import retrofit2.Response
 import java.io.File
 
@@ -70,13 +71,11 @@ class VisionApiClient {
                     if (response.isSuccessful) {
                         response.body()?.let {
                             callback(it, null)
+                            return
                         }
+                        callback(null, RuntimeException("response body is empty"))
                     } else {
-                        /*
-                        TODO: 에러 상황 처리해야됨
-                         1. 데이터는 전송했지만 번역이 실패한 경우
-                         2. 네트워크 통신이 실패한 경우
-                      */
+                        callback(null, HttpException(response))
                     }
                 }
 
@@ -109,9 +108,11 @@ class VisionApiClient {
                     if (response.isSuccessful) {
                         response.body()?.let {
                             callback(it, null)
+                            return
                         }
+                        callback(null, RuntimeException("response body is empty"))
                     } else {
-
+                        callback(null, HttpException(response))
                     }
                 }
 
@@ -167,8 +168,11 @@ class VisionApiClient {
                     if (response.isSuccessful) {
                         response.body()?.let {
                             callback(it, null)
+                            return
                         }
+                        callback(null, java.lang.RuntimeException("body is empty"))
                     }
+                    callback(null, HttpException(response))
                 }
 
                 override fun onFailure(call: Call<ThumbnailDetectResult>, t: Throwable) {
@@ -244,7 +248,11 @@ class VisionApiClient {
                     if (response.isSuccessful) {
                         response.body()?.let {
                             callback(it, null)
+                            return
                         }
+                        callback(null, java.lang.RuntimeException("body is empty"))
+                    } else {
+                        callback(null, HttpException(response))
                     }
                 }
 
@@ -274,7 +282,11 @@ class VisionApiClient {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         callback(it, null)
+                        return
                     }
+                    callback(null, java.lang.RuntimeException("body is empty"))
+                } else {
+                    callback(null, HttpException(response))
                 }
             }
 
@@ -304,7 +316,11 @@ class VisionApiClient {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         callback(it, null)
+                        return
                     }
+                    callback(null, java.lang.RuntimeException("body is empty"))
+                } else {
+                    callback(null, HttpException(response))
                 }
             }
 
@@ -333,7 +349,11 @@ class VisionApiClient {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         callback(it, null)
+                        return
                     }
+                    callback(null, java.lang.RuntimeException("body is empty"))
+                } else {
+                    callback(null, HttpException(response))
                 }
             }
 
@@ -360,7 +380,11 @@ class VisionApiClient {
                     if (response.isSuccessful) {
                         response.body()?.let {
                             callback(it, null)
+                            return
                         }
+                        callback(null, java.lang.RuntimeException("body is empty"))
+                    } else {
+                        callback(null, HttpException(response))
                     }
                 }
 
@@ -397,9 +421,7 @@ class VisionApiClient {
                                     callback
                                 )
                                 FACE_DETECT -> callFaceDetectApi(image, option.threshold, callback)
-                                else -> {
-                                    // Receive Fail
-                                }
+                                else -> callback(null, RuntimeException("Unknown Exception"))
                             }
                         }
                     }
