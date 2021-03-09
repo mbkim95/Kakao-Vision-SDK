@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
 import com.example.kakaovisionsdk.thumbnail.ThumbnailCropActivity
+import com.example.kakaovisionsdk.thumbnail.ThumbnailCropUrlActivity
 import com.example.kakaovisionsdk.translate.TranslateActivity
 import com.example.vision.VisionApiClient
 import com.google.android.material.snackbar.Snackbar
@@ -105,17 +106,7 @@ class MainActivity : AppCompatActivity() {
                     startActivity(Intent(this, ThumbnailCropActivity::class.java))
                 },
                 Item.ApiItem("Create Thumbnail - using web image url") {
-                    VisionApiClient.instance.createThumbnailImage(
-                        RYAN_IMAGE,
-                        400,
-                        400
-                    ) { result, error ->
-                        if (error != null) {
-                            makeSnackbar(error.message.toString(), error)
-                        } else if (result != null) {
-                            makeSnackbar(result.thumbnailImageUrl)
-                        }
-                    }
+                    startActivity(Intent(this, ThumbnailCropUrlActivity::class.java))
                 },
                 Item.ApiItem("Detect Thumbnail - using device image") {
                     VisionApiClient.instance.detectThumbnailImage(

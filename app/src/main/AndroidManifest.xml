@@ -15,6 +15,7 @@
         android:theme="@style/Theme.KakaoVisionSDK"
         android:usesCleartextTraffic="true">
         <activity android:name=".thumbnail.ThumbnailCropActivity" />
+        <activity android:name=".thumbnail.ThumbnailCropUrlActivity" />
         <activity android:name=".translate.TranslateActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
