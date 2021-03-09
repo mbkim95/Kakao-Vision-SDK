@@ -1,13 +1,16 @@
 package com.example.kakaovisionsdk
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
+import com.example.kakaovisionsdk.translate.TranslateActivity
 import com.example.vision.VisionApiClient
-import com.example.vision.model.translate.Language
 import com.google.android.material.snackbar.Snackbar
+import com.kakao.sdk.talk.TalkApiClient
+import com.kakao.sdk.user.UserApiClient
 
 
 class MainActivity : AppCompatActivity() {
@@ -22,7 +25,62 @@ class MainActivity : AppCompatActivity() {
 
         adapter = ApiAdapter(
             listOf(
-                Item.Header("Kakao AI API"),
+                Item.Header("User API"),
+                Item.ApiItem("KakaoTalk Login") {
+                    if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
+                        UserApiClient.instance.loginWithKakaoTalk(this) { token, error ->
+                            if (error != null) {
+                                makeSnackbar("로그인 실패", error)
+                            } else {
+                                makeSnackbar("로그인 성공\n${token}")
+                            }
+                        }
+                    } else {
+                        makeSnackbar("카카오톡을 설치해주세요")
+                    }
+                },
+                Item.ApiItem("Kakao Account Login") {
+                    UserApiClient.instance.loginWithKakaoAccount(this) { token, error ->
+                        if (error != null) {
+                            makeSnackbar("로그인 실패", error)
+                        } else {
+                            makeSnackbar("로그인 성공\n${token}")
+                        }
+                    }
+                },
+                Item.ApiItem("Logout") {
+                    UserApiClient.instance.logout { error ->
+                        if (error != null) {
+                            makeSnackbar("로그아웃 실패", error)
+                        } else {
+                            makeSnackbar("로그아웃 성공")
+                        }
+                    }
+                },
+                Item.ApiItem("unlink") {
+                    UserApiClient.instance.unlink { error ->
+                        if (error != null) {
+                            makeSnackbar("연결 끊기 실패", error)
+                        } else {
+                            makeSnackbar("연결 끊기 성공")
+                        }
+                    }
+                },
+                Item.Header("KakaoTalk API"),
+                Item.ApiItem("send OCR message to friend") {
+                    TalkApiClient.instance.friends { friends, error ->
+                        if (error != null) {
+                            makeSnackbar("친구 목록 가져오기 실패", error)
+                        } else {
+                            if (friends?.elements.isNullOrEmpty()) {
+                                makeSnackbar("서비스와 연결된 친구 목록이 없습니다")
+                            } else {
+                                // 친구 선택하는 Activity 띄우기
+                            }
+                        }
+                    }
+                },
+                Item.Header("Kakao Vision API"),
                 Item.ApiItem("OCR - using device image") {
                     VisionApiClient.instance.getOcrResult(this) { result, error ->
                         if (error != null) {
@@ -39,31 +97,15 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 },
-                Item.ApiItem("Translate - English to Korean") {
-                    if (this::sentence.isInitialized) {
-                        VisionApiClient.instance.translateSentence(
-                            sentence,
-                            Language.ENGLISH,
-                            Language.KOREAN
-                        ) { result, error ->
-                            if (error != null) {
-                                makeSnackbar(error.message.toString(), error)
-                            } else if (result != null) {
-                                val sb = StringBuilder()
-                                result.translatedText.forEach { list ->
-                                    list.forEach {
-                                        sb.append("$it ")
-                                    }
-                                }
-                                makeSnackbar(sb.toString())
-                            }
-                        }
-                    } else {
-                        makeSnackbar("OCR을 먼저 실행해주세요")
-                    }
+                Item.ApiItem("Translate") {
+                    startActivity(Intent(this, TranslateActivity::class.java))
                 },
                 Item.ApiItem("Create Thumbnail - using device image") {
-                    VisionApiClient.instance.createThumbnailImage(this, 400, 400) { result, error ->
+                    VisionApiClient.instance.createThumbnailImage(
+                        this,
+                        400,
+                        400
+                    ) { result, error ->
                         if (error != null) {
                             makeSnackbar(error.message.toString(), error)
                         } else if (result != null) {
@@ -85,7 +127,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 Item.ApiItem("Detect Thumbnail - using device image") {
-                    VisionApiClient.instance.detectThumbnailImage(this, 400, 400) { result, error ->
+                    VisionApiClient.instance.detectThumbnailImage(
+                        this,
+                        400,
+                        400
+                    ) { result, error ->
                         if (error != null) {
                             makeSnackbar(error.message.toString(), error)
                         } else if (result != null) {
@@ -116,7 +162,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 Item.ApiItem("Detect Face - using web image url") {
-                    VisionApiClient.instance.detectFace(FACE_SAMPLE_IMAGE, 0.4F) { result, error ->
+                    VisionApiClient.instance.detectFace(
+                        FACE_SAMPLE_IMAGE,
+                        0.4F
+                    ) { result, error ->
                         if (error != null) {
                             makeSnackbar(error.message.toString(), error)
                         } else if (result != null) {
@@ -128,7 +177,12 @@ class MainActivity : AppCompatActivity() {
         )
 
         binding.recyclerView.apply {
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+            addItemDecoration(
+                DividerItemDecoration(
+                    context,
+                    DividerItemDecoration.VERTICAL
+                )
+            )
             adapter = this@MainActivity.adapter
         }
     }

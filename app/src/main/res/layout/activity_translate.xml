@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".translate.TranslateActivity">
+
+    <Spinner
+        android:id="@+id/source_lang"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/target_lang"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="@id/source_lang"
+        app:layout_constraintTop_toBottomOf="@id/source_lang" />
+
+    <Button
+        android:id="@+id/translate_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="번역"
+        app:layout_constraintBottom_toBottomOf="@id/target_lang"
+        app:layout_constraintStart_toEndOf="@id/source_lang"
+        app:layout_constraintTop_toTopOf="@id/source_lang" />
+
+    <EditText
+        android:id="@+id/source_et"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="top"
+        android:hint="번역할 문장을 입력하세요"
+        app:layout_constraintBottom_toTopOf="@id/target_tv"
+        app:layout_constraintTop_toBottomOf="@id/target_lang" />
+
+    <TextView
+        android:id="@+id/target_tv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:gravity="top"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/source_et" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
