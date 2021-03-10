@@ -35,6 +35,10 @@ class FriendsAdapter(var friends: List<FriendItem>) :
 
                 nameTv.text = item.friendInfo.profileNickname
 
+                checkBox.setOnClickListener {
+                    item.isChecked = !checkBox.isChecked
+                }
+
                 root.setOnClickListener {
                     checkBox.isChecked = !checkBox.isChecked
                     item.isChecked = checkBox.isChecked
