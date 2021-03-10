@@ -8,6 +8,7 @@ import com.example.kakaovisionsdk.friend.FriendItem
 import com.example.kakaovisionsdk.friend.FriendsActivity
 import com.example.vision.VisionApiClient
 import com.google.android.material.snackbar.Snackbar
+import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.talk.TalkApiClient
 import com.kakao.sdk.template.model.Link
 import com.kakao.sdk.template.model.TextTemplate
@@ -40,6 +41,10 @@ class OcrActivity : AppCompatActivity() {
             shareBtn.setOnClickListener {
                 if (resultTv.text.isNullOrEmpty()) {
                     makeSnackbar("추출된 문장이 없습니다")
+                    return@setOnClickListener
+                }
+                if(!AuthApiClient.instance.hasToken()){
+                    makeSnackbar("로그인을 먼저 해주세요")
                     return@setOnClickListener
                 }
 
