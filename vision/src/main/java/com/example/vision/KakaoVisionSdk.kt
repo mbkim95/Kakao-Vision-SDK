@@ -1,7 +1,5 @@
 package com.example.vision
 
-import android.content.Context
-import android.content.SharedPreferences
 import com.example.vision.KakaoVisionSdk.init
 
 /**
@@ -11,19 +9,16 @@ import com.example.vision.KakaoVisionSdk.init
  *  ```kotlin
  *  class MyApplication : Application {
  *      fun onCreate() {
- *          KakaoVisionSdk.init(this, "${REST_API_KEY}")
+ *          KakaoVisionSdk.init("${REST_API_KEY}")
  *      }
  *  }
  *  ```
  */
 object KakaoVisionSdk {
-    private lateinit var sharedPreferences: SharedPreferences
-    internal val restApiKey: String get() = sharedPreferences.getString(REST_API_KEY, "").toString()
+    internal lateinit var restApiKey: String
 
     @JvmStatic
-    fun init(context: Context, restApiKey: String) {
-        sharedPreferences =
-            context.getSharedPreferences(SHARED_PREFERENCE_KEY, Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString(REST_API_KEY, restApiKey).apply()
+    fun init(restApiKey: String) {
+        this.restApiKey = restApiKey
     }
 }

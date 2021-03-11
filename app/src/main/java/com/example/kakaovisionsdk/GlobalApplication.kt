@@ -9,7 +9,7 @@ class GlobalApplication : Application() {
         super.onCreate()
 
         KakaoSdk.init(applicationContext, NATIVE_APP_KEY, loggingEnabled = true)
-        KakaoVisionSdk.init(applicationContext, REST_API_KEY)
+        KakaoVisionSdk.init(REST_API_KEY)
     }
 
     companion object {
