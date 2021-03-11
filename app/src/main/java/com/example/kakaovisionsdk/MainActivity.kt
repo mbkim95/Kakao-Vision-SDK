@@ -3,6 +3,7 @@ package com.example.kakaovisionsdk
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.kakaovisionsdk.databinding.ActivityMainBinding
@@ -19,7 +20,6 @@ import com.kakao.sdk.user.UserApiClient
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: ApiAdapter
-    private lateinit var sentence: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +28,60 @@ class MainActivity : AppCompatActivity() {
 
         adapter = ApiAdapter(
             listOf(
+                Item.Header("Kakao Vision API"),
+                Item.ApiItem("OCR - using device image") {
+                    startActivity(Intent(this, OcrActivity::class.java))
+                },
+                Item.ApiItem("Translate") {
+                    startActivity(Intent(this, TranslateActivity::class.java))
+                },
+                Item.ApiItem("Create Thumbnail - using device image") {
+                    startActivity(Intent(this, ThumbnailCropActivity::class.java))
+                },
+                Item.ApiItem("Create Thumbnail - using web image url") {
+                    startActivity(Intent(this, ThumbnailCropUrlActivity::class.java))
+                },
+                Item.ApiItem("Detect Thumbnail - using device image") {
+                    VisionApiClient.instance.detectThumbnailImage(
+                        this,
+                        400,
+                        400
+                    ) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            Log.d("Kakao Vision", "$result")
+                            Toast.makeText(this@MainActivity, "$result", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                Item.ApiItem("Detect Thumbnail - using web image url") {
+                    VisionApiClient.instance.detectThumbnailImage(
+                        RYAN_IMAGE,
+                        400,
+                        400
+                    ) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            Log.d("Kakao Vision", "$result")
+                            Toast.makeText(this@MainActivity, "$result", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                Item.ApiItem("Detect Face - using device image") {
+                    VisionApiClient.instance.detectFace(this) { result, error ->
+                        if (error != null) {
+                            makeSnackbar(error.message.toString(), error)
+                        } else if (result != null) {
+                            Log.d("Kakao Vision", "$result")
+                            Toast.makeText(this@MainActivity, "$result", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                Item.ApiItem("Detect Face - using web image url") {
+                    startActivity(Intent(this, FaceDetectActivity::class.java))
+                },
                 Item.Header("User API"),
                 Item.ApiItem("KakaoTalk Login") {
                     if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
@@ -68,57 +122,6 @@ class MainActivity : AppCompatActivity() {
                             makeSnackbar("연결 끊기 성공")
                         }
                     }
-                },
-                Item.Header("Kakao Vision API"),
-                Item.ApiItem("OCR - using device image") {
-                    startActivity(Intent(this, OcrActivity::class.java))
-                },
-                Item.ApiItem("Translate") {
-                    startActivity(Intent(this, TranslateActivity::class.java))
-                },
-                Item.ApiItem("Create Thumbnail - using device image") {
-                    startActivity(Intent(this, ThumbnailCropActivity::class.java))
-                },
-                Item.ApiItem("Create Thumbnail - using web image url") {
-                    startActivity(Intent(this, ThumbnailCropUrlActivity::class.java))
-                },
-                Item.ApiItem("Detect Thumbnail - using device image") {
-                    VisionApiClient.instance.detectThumbnailImage(
-                        this,
-                        400,
-                        400
-                    ) { result, error ->
-                        if (error != null) {
-                            makeSnackbar(error.message.toString(), error)
-                        } else if (result != null) {
-                            makeSnackbar("$result")
-                        }
-                    }
-                },
-                Item.ApiItem("Detect Thumbnail - using web image url") {
-                    VisionApiClient.instance.detectThumbnailImage(
-                        RYAN_IMAGE,
-                        400,
-                        400
-                    ) { result, error ->
-                        if (error != null) {
-                            makeSnackbar(error.message.toString(), error)
-                        } else if (result != null) {
-                            makeSnackbar("$result")
-                        }
-                    }
-                },
-                Item.ApiItem("Detect Face - using device image") {
-                    VisionApiClient.instance.detectFace(this) { result, error ->
-                        if (error != null) {
-                            makeSnackbar(error.message.toString(), error)
-                        } else if (result != null) {
-                            makeSnackbar("$result")
-                        }
-                    }
-                },
-                Item.ApiItem("Detect Face - using web image url") {
-                    startActivity(Intent(this, FaceDetectActivity::class.java))
                 },
             )
         )
